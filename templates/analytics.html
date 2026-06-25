@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics — VerifyAI</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+  nav{background:#161b22;border-bottom:1px solid #30363d;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;color:#58a6ff;text-decoration:none}
+  .logo-icon{width:32px;height:32px;background:#1f6feb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .nav-links{display:flex;gap:4px}
+  .nav-links a{padding:7px 14px;border-radius:6px;font-size:13px;text-decoration:none;color:#8b949e;transition:all .15s}
+  .nav-links a:hover,.nav-links a.active{background:#21262d;color:#e6edf3}
+  .container{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sub{font-size:13px;color:#8b949e;margin-bottom:1.5rem}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+  .sc{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px}
+  .scn{font-size:28px;font-weight:700;margin-bottom:3px}
+  .scl{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1rem}
+  .panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+  .panel-title{font-size:11px;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px}
+  .bar-label{width:80px;color:#8b949e;font-size:12px}
+  .bar-track{flex:1;background:#21262d;border-radius:4px;height:7px;overflow:hidden}
+  .bar-fill{height:7px;border-radius:4px;transition:width .7s ease}
+  .bar-count{min-width:28px;text-align:right;font-size:12px;color:#8b949e}
+  .hrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #21262d;font-size:13px}
+  .hrow:last-child{border:none}
+  .htag{width:18px;height:18px;border-radius:5px;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;color:#8b949e}
+  .htxt{flex:1;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+  .vbadge{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+  .vR{background:#0d4429;color:#3fb950}.vF{background:#3d0e0e;color:#f85149}.vU{background:#3d2e00;color:#d29922}
+  .htime{font-size:11px;color:#484f58}
+  .em{text-align:center;padding:2rem;color:#484f58;font-size:13px}
+  .clear-btn{padding:4px 12px;background:transparent;border:1px solid #30363d;border-radius:6px;color:#8b949e;font-size:12px;cursor:pointer;font-family:'Segoe UI',sans-serif}
+  .clear-btn:hover{border-color:#f85149;color:#f85149}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="logo-icon">🔍</div> VerifyAI</a>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/text">Text</a>
+    <a href="/image">Image</a>
+    <a href="/url">URL</a>
+    <a href="/analytics" class="active">Analytics</a>
+  </div>
+</nav>
+<div class="container">
+  <h1>Analytics</h1>
+  <div class="sub">Your detection history and result breakdown</div>
+  <div class="g4">
+    <div class="sc"><div class="scn" id="a0" style="color:#58a6ff">0</div><div class="scl">Total Checks</div></div>
+    <div class="sc"><div class="scn" id="a1" style="color:#3fb950">0</div><div class="scl">Real</div></div>
+    <div class="sc"><div class="scn" id="a2" style="color:#f85149">0</div><div class="scl">Fake</div></div>
+    <div class="sc"><div class="scn" id="a3" style="color:#d29922">0</div><div class="scl">Uncertain</div></div>
+  </div>
+  <div class="g2">
+    <div class="panel" style="margin:0">
+      <div class="panel-title">Verdict distribution</div>
+      <div id="vdist"><div class="em" style="padding:.5rem">No data yet</div></div>
+    </div>
+    <div class="panel" style="margin:0">
+      <div class="panel-title">Check type breakdown</div>
+      <div id="tdist"><div class="em" style="padding:.5rem">No data yet</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">
+      Recent checks
+      <button class="clear-btn" onclick="clearHistory()">Clear history</button>
+    </div>
+    <div id="hlist"><div class="em">No checks yet — start analyzing!</div></div>
+  </div>
+</div>
+<script>
+function load(){
+  const stats=JSON.parse(localStorage.getItem('vAI_stats')||'{"total":0,"real":0,"fake":0,"unc":0}');
+  document.getElementById('a0').textContent=stats.total;
+  document.getElementById('a1').textContent=stats.real;
+  document.getElementById('a2').textContent=stats.fake;
+  document.getElementById('a3').textContent=stats.unc;
+  const t=stats.total;
+  document.getElementById('vdist').innerHTML=t?[
+    ['REAL',stats.real,'#3fb950'],
+    ['FAKE',stats.fake,'#f85149'],
+    ['UNCERTAIN',stats.unc,'#d29922']
+  ].map(([l,v,c])=>`<div class="bar-row"><span class="bar-label">${l}</span><div class="bar-track"><div class="bar-fill" style="width:${t?Math.round(v/t*100):0}%;background:${c}"></div></div><span class="bar-count">${v}</span></div>`).join(''):'<div class="em" style="padding:.5rem">No data</div>';
+
+  const hist=JSON.parse(localStorage.getItem('vAI_history')||'[]');
+  const tc={text:0,image:0,url:0};
+  hist.forEach(h=>{ if(tc[h.type]!==undefined)tc[h.type]++; });
+  const tt=hist.length;
+  document.getElementById('tdist').innerHTML=tt?[
+    ['Text',tc.text,'#58a6ff'],
+    ['Image',tc.image,'#a371f7'],
+    ['URL',tc.url,'#3fb950']
+  ].map(([l,v,c])=>`<div class="bar-row"><span class="bar-label">${l}</span><div class="bar-track"><div class="bar-fill" style="width:${tt?Math.round(v/tt*100):0}%;background:${c}"></div></div><span class="bar-count">${v}</span></div>`).join(''):'<div class="em" style="padding:.5rem">No data</div>';
+
+  const hl=document.getElementById('hlist');
+  if(!hist.length){hl.innerHTML='<div class="em">No checks yet</div>';return;}
+  const ti={text:'T',image:'I',url:'U'};
+  const vc={REAL:'vR',FAKE:'vF',UNCERTAIN:'vU'};
+  hl.innerHTML=hist.slice(0,30).map(h=>{
+    const ago=Math.round((Date.now()-h.time)/60000);
+    const agoStr=ago<1?'just now':ago<60?ago+'m ago':ago<1440?Math.round(ago/60)+'h ago':Math.round(ago/1440)+'d ago';
+    return`<div class="hrow">
+      <div class="htag">${ti[h.type]||'?'}</div>
+      <span class="htxt">${h.text||''}</span>
+      <span class="vbadge ${vc[h.verdict]||'vU'}">${h.verdict||'?'}</span>
+      <span class="htime">${agoStr}</span>
+    </div>`;
+  }).join('');
+}
+
+function clearHistory(){
+  if(confirm('Clear all history and stats?')){
+    localStorage.removeItem('vAI_stats');
+    localStorage.removeItem('vAI_history');
+    load();
+  }
+}
+
+load();
+</script>
+</body>
+</html>

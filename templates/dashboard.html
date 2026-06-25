@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fake News Detection</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+  nav{background:#161b22;border-bottom:1px solid #30363d;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;color:#58a6ff;text-decoration:none}
+  .logo-icon{width:32px;height:32px;background:#1f6feb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .nav-links{display:flex;gap:4px}
+  .nav-links a{padding:7px 14px;border-radius:6px;font-size:13px;text-decoration:none;color:#8b949e;transition:all .15s}
+  .nav-links a:hover,.nav-links a.active{background:#21262d;color:#e6edf3}
+  .container{max-width:960px;margin:0 auto;padding:2.5rem 1.5rem}
+  .hero{text-align:center;margin-bottom:3rem}
+  .hero h1{font-size:32px;font-weight:700;margin-bottom:10px;background:linear-gradient(135deg,#58a6ff,#a371f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+  .hero p{font-size:15px;color:#8b949e;max-width:520px;margin:0 auto}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2.5rem}
+  .stat{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px;text-align:center}
+  .stat-n{font-size:28px;font-weight:700;margin-bottom:4px}
+  .stat-l{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.06em}
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:2rem}
+  .card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;transition:border-color .15s,transform .15s;cursor:pointer;text-decoration:none;color:inherit;display:block}
+  .card:hover{border-color:#58a6ff;transform:translateY(-2px)}
+  .card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+  .card h3{font-size:15px;font-weight:600;margin-bottom:6px}
+  .card p{font-size:13px;color:#8b949e;line-height:1.5}
+  .card-arrow{margin-top:12px;font-size:12px;color:#58a6ff}
+  .how-it-works{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem}
+  .how-it-works h2{font-size:15px;font-weight:600;margin-bottom:1.2rem;color:#8b949e;text-transform:uppercase;letter-spacing:.05em}
+  .step{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid #21262d}
+  .step:last-child{border:none}
+  .step-num{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+  .step-body h4{font-size:13px;font-weight:600;margin-bottom:3px}
+  .step-body p{font-size:12px;color:#8b949e;line-height:1.5}
+  .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500}
+  .badge-real{background:#0d4429;color:#3fb950}
+  .badge-fake{background:#3d0e0e;color:#f85149}
+  .badge-unc{background:#3d2e00;color:#d29922}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="logo-icon">🔍</div> VerifyAI</a>
+  <div class="nav-links">
+    <a href="/" class="active">Dashboard</a>
+    <a href="/text">Text</a>
+    <a href="/image">Image</a>
+    <a href="/url">URL</a>
+    <a href="/analytics">Analytics</a>
+  </div>
+</nav>
+<div class="container">
+  <div class="hero">
+    <h1>AI-Powered Fake News Detector</h1>
+    <p>Uses Groq LLaMA 3.3 + NewsAPI + Google Search + smart date intelligence to verify any claim in seconds.</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="s-total" style="color:#58a6ff">0</div><div class="stat-l">Total Checks</div></div>
+    <div class="stat"><div class="stat-n" id="s-real" style="color:#3fb950">0</div><div class="stat-l">Verified Real</div></div>
+    <div class="stat"><div class="stat-n" id="s-fake" style="color:#f85149">0</div><div class="stat-l">Detected Fake</div></div>
+    <div class="stat"><div class="stat-n" id="s-unc" style="color:#d29922">0</div><div class="stat-l">Uncertain</div></div>
+  </div>
+  <div class="cards">
+    <a href="/text" class="card">
+      <div class="card-icon" style="background:#122d45">📝</div>
+      <h3>Text Analysis</h3>
+      <p>Fact-check any claim, headline or statement using date intelligence + live news + Groq LLaMA 3.3.</p>
+      <div class="card-arrow">Analyze text →</div>
+    </a>
+    <a href="/image" class="card">
+      <div class="card-icon" style="background:#2b1b45">🖼️</div>
+      <h3>Image Analysis</h3>
+      <p>Upload any image — Groq LLaMA 3.3 detects deepfakes, manipulation and misleading visual content.</p>
+      <div class="card-arrow">Analyze image →</div>
+    </a>
+    <a href="/url" class="card">
+      <div class="card-icon" style="background:#122d1a">🔗</div>
+      <h3>URL Credibility</h3>
+      <p>Paste a news article URL or headline to verify source credibility and factual accuracy.</p>
+      <div class="card-arrow">Check URL →</div>
+    </a>
+    <a href="/analytics" class="card">
+      <div class="card-icon" style="background:#2d2000">📊</div>
+      <h3>Analytics</h3>
+      <p>View your detection history, accuracy breakdown and per-API contribution stats.</p>
+      <div class="card-arrow">View report →</div>
+    </a>
+  </div>
+  <div class="how-it-works">
+    <h2>How Detection Works — 4 Layers</h2>
+    <div class="step">
+      <div class="step-num" style="background:#122d45;color:#58a6ff">1</div>
+      <div class="step-body"><h4>Date Intelligence</h4><p>Extracts any date from the claim. Past date + verified → <span class="badge badge-real">REAL</span>. Past date + impossible → <span class="badge badge-fake">FAKE</span>. Future date → <span class="badge badge-unc">UNCERTAIN</span>.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:#2d2000;color:#d29922">2</div>
+      <div class="step-body"><h4>NewsAPI Live Search</h4><p>Searches thousands of real-time news publishers. Matching article headlines are injected directly into Groq LLaMA 3.3 as evidence.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:#122d1a;color:#3fb950">3</div>
+      <div class="step-body"><h4>Google Custom Search</h4><p>Cross-checks the claim against the broader web. Titles and snippets from credible sources are fed to Groq LLaMA 3.3.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background:#2b1b45;color:#a371f7">4</div>
+      <div class="step-body"><h4>Groq LLaMA 3.3 Final Verdict</h4><p>Synthesizes all evidence (date + news + Google + its own knowledge) into a final weighted REAL / FAKE / UNCERTAIN verdict with confidence score.</p></div>
+    </div>
+  </div>
+</div>
+<script>
+  // Stats are stored SERVER-SIDE (reset only when Flask restarts).
+  // localStorage is used only as a fallback display while the fetch loads.
+  async function loadStats() {
+    try {
+      const r = await fetch('/stats');
+      const s = await r.json();
+      document.getElementById('s-total').textContent = s.total;
+      document.getElementById('s-real').textContent  = s.real;
+      document.getElementById('s-fake').textContent  = s.fake;
+      document.getElementById('s-unc').textContent   = s.unc;
+    } catch(e) {
+      // fallback to localStorage if server unreachable
+      const s = JSON.parse(localStorage.getItem('vAI_stats') || '{"total":0,"real":0,"fake":0,"unc":0}');
+      document.getElementById('s-total').textContent = s.total;
+      document.getElementById('s-real').textContent  = s.real;
+      document.getElementById('s-fake').textContent  = s.fake;
+      document.getElementById('s-unc').textContent   = s.unc;
+    }
+  }
+  loadStats();
+  // Refresh stats every 3 seconds so dashboard stays live
+  setInterval(loadStats, 3000);
+</script>
+</body>
+</html>

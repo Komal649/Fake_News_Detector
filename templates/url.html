@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Credibility — VerifyAI</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+  nav{background:#161b22;border-bottom:1px solid #30363d;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;color:#58a6ff;text-decoration:none}
+  .logo-icon{width:32px;height:32px;background:#1f6feb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .nav-links{display:flex;gap:4px}
+  .nav-links a{padding:7px 14px;border-radius:6px;font-size:13px;text-decoration:none;color:#8b949e;transition:all .15s}
+  .nav-links a:hover,.nav-links a.active{background:#21262d;color:#e6edf3}
+  .container{max-width:800px;margin:0 auto;padding:2rem 1.5rem}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sub{font-size:13px;color:#8b949e;margin-bottom:1.5rem}
+  .panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+  .panel-title{font-size:11px;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem}
+  input[type=text]{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:11px 14px;color:#e6edf3;font-family:'Segoe UI',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+  input[type=text]:focus{border-color:#58a6ff}
+  .examples{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .ex{padding:4px 12px;background:#21262d;border:1px solid #30363d;border-radius:20px;font-size:12px;color:#8b949e;cursor:pointer;transition:all .15s}
+  .ex:hover{border-color:#58a6ff;color:#58a6ff}
+  .run-btn{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:10px 24px;background:#1f6feb;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s}
+  .run-btn:hover{background:#388bfd}
+  .run-btn:disabled{opacity:.4;cursor:not-allowed}
+  #result{display:none}
+  .verdict-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:1.2rem;flex-wrap:wrap}
+  .verdict-badge{padding:6px 20px;border-radius:20px;font-size:14px;font-weight:700}
+  .v-REAL{background:#0d4429;color:#3fb950;border:1px solid #238636}
+  .v-FAKE{background:#3d0e0e;color:#f85149;border:1px solid #da3633}
+  .v-UNCERTAIN{background:#3d2e00;color:#d29922;border:1px solid #9e6a03}
+  .conf-wrap{flex:1;min-width:160px}
+  .conf-label{font-size:11px;color:#8b949e;margin-bottom:5px}
+  .conf-track{background:#21262d;border-radius:4px;height:6px;overflow:hidden}
+  .conf-fill{height:6px;border-radius:4px;transition:width .7s ease}
+  .fill-REAL{background:#3fb950}.fill-FAKE{background:#f85149}.fill-UNCERTAIN{background:#d29922}
+  .sources-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:12px 0}
+  .src-chip{background:#21262d;border:1px solid #30363d;border-radius:8px;padding:9px 12px;display:flex;align-items:flex-start;gap:8px}
+  .src-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+  .dot-g{background:#3fb950}.dot-r{background:#f85149}.dot-a{background:#d29922}.dot-x{background:#484f58}
+  .src-chip span{font-size:12px;color:#8b949e;line-height:1.4}
+  .rbox{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;margin-top:10px}
+  .rl{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .rbox p{font-size:13px;line-height:1.6}
+  .news-list .nitem{padding:8px 0;border-bottom:1px solid #21262d}
+  .news-list .nitem:last-child{border:none}
+  .nit{font-size:13px;font-weight:500;margin-bottom:2px}
+  .nis{font-size:11px;color:#8b949e}
+  .sigs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .sig{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+  .sig-green{background:#0d4429;color:#3fb950}.sig-red{background:#3d0e0e;color:#f85149}.sig-yellow{background:#3d2e00;color:#d29922}
+  .loading{display:flex;flex-direction:column;gap:8px;padding:.5rem 0}
+  .lstep{display:flex;align-items:center;gap:10px;font-size:13px;color:#8b949e}
+  .lstep-icon{width:18px;height:18px;border-radius:50%;border:2px solid #30363d;flex-shrink:0}
+  .lstep-run{border-color:#58a6ff;border-top-color:transparent;animation:spin .7s linear infinite}
+  .lstep-done{border-color:#3fb950;background:#0d4429}
+  .lstep-wait{background:#21262d}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="logo-icon">🔍</div> VerifyAI</a>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/text">Text</a>
+    <a href="/image">Image</a>
+    <a href="/url" class="active">URL</a>
+    <a href="/analytics">Analytics</a>
+  </div>
+</nav>
+<div class="container">
+  <h1>URL Credibility Check</h1>
+  <div class="sub">Paste a news article URL or headline — verified via NewsAPI + Google + Groq LLaMA 3.3</div>
+  <div class="panel">
+    <div class="panel-title">News URL or headline</div>
+    <input type="text" id="ui" placeholder="https://example.com/news/article   or   paste a news headline here">
+    <div class="examples">
+      <span class="ex" onclick="setEx('Scientists discover cure for cancer in 2024')">Cancer cure 2024</span>
+      <span class="ex" onclick="setEx('NASA confirms aliens exist says leaked document')">NASA aliens leaked</span>
+      <span class="ex" onclick="setEx('India wins 2023 Cricket World Cup final')">India 2023 WC</span>
+    </div>
+    <button class="run-btn" id="ub" onclick="runUrl()"><svg width="14" height="14" viewBox="0 0 16 16" fill="white"><path d="M3 2l11 6-11 6V2z"/></svg> Check Credibility</button>
+  </div>
+  <div id="result"></div>
+</div>
+<script>
+function setEx(t){ document.getElementById('ui').value=t; }
+
+async function runUrl(){
+  const url = document.getElementById('ui').value.trim(); if(!url) return;
+  const btn = document.getElementById('ub');
+  const res = document.getElementById('result');
+  btn.disabled = true;
+  res.style.display = 'block';
+  res.innerHTML = `<div class="panel"><div class="panel-title">Running credibility check</div><div class="loading">
+    <div class="lstep"><div class="lstep-icon lstep-run"></div><span>Parsing URL / headline...</span></div>
+    <div class="lstep"><div class="lstep-icon lstep-wait"></div><span>NewsAPI — searching for related coverage...</span></div>
+    <div class="lstep"><div class="lstep-icon lstep-wait"></div><span>Google Search — web credibility check...</span></div>
+    <div class="lstep"><div class="lstep-icon lstep-wait"></div><span>Groq LLaMA 3.3 — final verdict...</span></div>
+  </div></div>`;
+  try {
+    const r = await fetch('/analyze',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text: url})
+    });
+    const d = await r.json();
+    if(d.error){ res.innerHTML=`<div class="panel" style="color:#f85149">${d.error}</div>`; btn.disabled=false; return; }
+    const v=d.verdict||'UNCERTAIN';
+    const conf=Math.round(d.confidence||50);
+    const banHtml=d.date_info?`<div style="background:${d.date_info.type==='past'?'#0d2d0d':'#0d1f3d'};border:1px solid ${d.date_info.type==='past'?'#238636':'#1f6feb'};border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:${d.date_info.type==='past'?'#3fb950':'#58a6ff'}">📅 Date detected: <strong>${d.date_info.date}</strong> — ${d.date_info.type} event</div>`:'';
+    const srcHtml=[
+      {name:'Date check',dc:d.date_info?(d.date_info.type==='past'?'dot-g':'dot-a'):'dot-x',info:d.date_info?d.date_info.date:'None found'},
+      {name:'NewsAPI',dc:d.news_articles?.length>0?'dot-g':'dot-x',info:d.news_articles?.length>0?d.news_articles.length+' match(es)':'No key / no match'},
+      {name:'Google',dc:d.google_items?.length>0?'dot-g':'dot-x',info:d.google_items?.length>0?d.google_items.length+' result(s)':'No key / no results'},
+      {name:'Groq LLaMA 3.3',dc:'dot-g',info:'Verdict generated'}
+    ].map(s=>`<div class="src-chip"><div class="src-dot ${s.dc}"></div><span><strong style="color:#e6edf3">${s.name}</strong><br>${s.info}</span></div>`).join('');
+    const newsHtml=d.news_articles?.length>0?`<div class="rbox"><div class="rl">NewsAPI coverage found</div><div class="news-list">${d.news_articles.map(a=>`<div class="nitem"><div class="nit">${a.title}</div><div class="nis">${a.source?.name||''} · ${(a.publishedAt||'').substring(0,10)}</div></div>`).join('')}</div></div>`:'';
+    const sigHtml=(d.signals||[]).map(s=>`<span class="sig sig-${s.type||'yellow'}">${s.text}</span>`).join('');
+    res.innerHTML=`<div class="panel">${banHtml}
+      <div class="verdict-header">
+        <span class="verdict-badge v-${v}">${v}</span>
+        <div class="conf-wrap"><div class="conf-label">Confidence: ${conf}%</div><div class="conf-track"><div class="conf-fill fill-${v}" style="width:${conf}%"></div></div></div>
+      </div>
+      <div class="sources-grid">${srcHtml}</div>
+      <div class="rbox"><div class="rl">Assessment</div><p>${d.reason||''}</p></div>
+      <div class="rbox"><div class="rl">Explanation</div><p>${d.explanation||''}</p></div>
+      ${newsHtml}${sigHtml?`<div class="sigs">${sigHtml}</div>`:''}
+    </div>`;
+    const s=JSON.parse(localStorage.getItem('vAI_stats')||'{"total":0,"real":0,"fake":0,"unc":0}');
+    s.total++; if(v==='REAL')s.real++; else if(v==='FAKE')s.fake++; else s.unc++;
+    localStorage.setItem('vAI_stats',JSON.stringify(s));
+    const h=JSON.parse(localStorage.getItem('vAI_history')||'[]');
+    h.unshift({type:'url',text:url.substring(0,80),verdict:v,time:Date.now()});
+    localStorage.setItem('vAI_history',JSON.stringify(h.slice(0,50)));
+  } catch(e){ res.innerHTML=`<div class="panel" style="color:#f85149">Error: ${e.message}</div>`; }
+  btn.disabled=false;
+}
+</script>
+</body>
+</html>

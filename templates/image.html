@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Analysis — VerifyAI</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+  nav{background:#161b22;border-bottom:1px solid #30363d;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;color:#58a6ff;text-decoration:none}
+  .logo-icon{width:32px;height:32px;background:#1f6feb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .nav-links{display:flex;gap:4px}
+  .nav-links a{padding:7px 14px;border-radius:6px;font-size:13px;text-decoration:none;color:#8b949e;transition:all .15s}
+  .nav-links a:hover,.nav-links a.active{background:#21262d;color:#e6edf3}
+  .container{max-width:800px;margin:0 auto;padding:2rem 1.5rem}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sub{font-size:13px;color:#8b949e;margin-bottom:1.5rem}
+  .panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+  .panel-title{font-size:11px;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem}
+  .upload-zone{border:2px dashed #30363d;border-radius:10px;padding:2.5rem;text-align:center;cursor:pointer;transition:border-color .15s;background:#0d1117}
+  .upload-zone:hover{border-color:#58a6ff}
+  .upload-zone input{display:none}
+  .uz-icon{font-size:36px;margin-bottom:10px}
+  .uz-title{font-size:14px;font-weight:600;margin-bottom:4px}
+  .uz-sub{font-size:12px;color:#8b949e}
+  #prevImg{max-width:100%;border-radius:8px;margin-top:1rem;display:none;border:1px solid #30363d}
+  input[type=text]{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 12px;color:#e6edf3;font-family:'Segoe UI',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+  input[type=text]:focus{border-color:#58a6ff}
+  .run-btn{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:10px 24px;background:#1f6feb;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s}
+  .run-btn:hover{background:#388bfd}
+  .run-btn:disabled{opacity:.4;cursor:not-allowed}
+  #result{display:none}
+  .verdict-badge{padding:6px 20px;border-radius:20px;font-size:14px;font-weight:700}
+  .v-REAL{background:#0d4429;color:#3fb950;border:1px solid #238636}
+  .v-FAKE{background:#3d0e0e;color:#f85149;border:1px solid #da3633}
+  .v-UNCERTAIN{background:#3d2e00;color:#d29922;border:1px solid #9e6a03}
+  .conf-track{background:#21262d;border-radius:4px;height:6px;overflow:hidden;margin-top:8px}
+  .conf-fill{height:6px;border-radius:4px;transition:width .7s ease}
+  .fill-REAL{background:#3fb950}.fill-FAKE{background:#f85149}.fill-UNCERTAIN{background:#d29922}
+  .sources-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:12px 0}
+  .src-chip{background:#21262d;border:1px solid #30363d;border-radius:8px;padding:9px 12px;display:flex;align-items:flex-start;gap:8px}
+  .src-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+  .dot-g{background:#3fb950}.dot-r{background:#f85149}.dot-a{background:#d29922}.dot-x{background:#484f58}
+  .src-chip span{font-size:12px;color:#8b949e;line-height:1.4}
+  .rbox{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;margin-top:10px}
+  .rl{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .rbox p{font-size:13px;line-height:1.6}
+  .sigs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .sig{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+  .sig-green{background:#0d4429;color:#3fb950}.sig-red{background:#3d0e0e;color:#f85149}.sig-yellow{background:#3d2e00;color:#d29922}
+  .verdict-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:1.2rem;flex-wrap:wrap}
+  .conf-wrap{flex:1;min-width:160px}
+  .conf-label{font-size:11px;color:#8b949e;margin-bottom:5px}
+  .conf-pct{font-size:14px;font-weight:600;margin-top:4px}
+  .loading{display:flex;flex-direction:column;gap:8px;padding:.5rem 0}
+  .lstep{display:flex;align-items:center;gap:10px;font-size:13px;color:#8b949e}
+  .lstep-icon{width:18px;height:18px;border-radius:50%;border:2px solid #30363d;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .lstep-run{border-color:#58a6ff;border-top-color:transparent;animation:spin .7s linear infinite}
+  .lstep-done{border-color:#3fb950;background:#0d4429}
+  .lstep-wait{background:#21262d}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><div class="logo-icon">🔍</div> VerifyAI</a>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/text">Text</a>
+    <a href="/image" class="active">Image</a>
+    <a href="/url">URL</a>
+    <a href="/analytics">Analytics</a>
+  </div>
+</nav>
+<div class="container">
+  <h1>Image Analysis</h1>
+  <div class="sub">Upload any image — Groq LLaMA 3.3 Vision detects deepfakes, manipulation and misleading content</div>
+  <div class="panel">
+    <div class="panel-title">Upload image</div>
+    <div class="upload-zone" onclick="document.getElementById('imgf').click()">
+      <input type="file" id="imgf" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewFn(event)">
+      <div class="uz-icon">🖼️</div>
+      <div class="uz-title">Click to upload or drag & drop</div>
+      <div class="uz-sub">PNG, JPG, WEBP — maximum 10MB</div>
+    </div>
+    <img id="prevImg" alt="Uploaded image preview">
+    <div id="ctxWrap" style="margin-top:12px;display:none">
+      <label style="font-size:12px;color:#8b949e;display:block;margin-bottom:6px">What does this image claim? (optional — greatly improves accuracy)</label>
+      <input type="text" id="imgCtx" placeholder="e.g. This photo claims to show flooding in Mumbai on 15 July 2023">
+    </div>
+    <button class="run-btn" id="ib" onclick="runImage()" style="display:none"><svg width="14" height="14" viewBox="0 0 16 16" fill="white"><path d="M3 2l11 6-11 6V2z"/></svg> Analyze Image</button>
+  </div>
+  <div id="result"></div>
+</div>
+<script>
+function previewFn(e){
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('prevImg').src = ev.target.result;
+    document.getElementById('prevImg').style.display = 'block';
+    document.getElementById('ctxWrap').style.display = 'block';
+    document.getElementById('ib').style.display = 'inline-flex';
+  };
+  reader.readAsDataURL(f);
+}
+
+async function runImage(){
+  const f = document.getElementById('imgf').files[0]; if(!f) return;
+  const ctx = document.getElementById('imgCtx').value.trim();
+  const btn = document.getElementById('ib');
+  const res = document.getElementById('result');
+  btn.disabled = true;
+  res.style.display = 'block';
+  res.innerHTML = `<div class="panel"><div class="panel-title">Analyzing image</div><div class="loading">
+    <div class="lstep"><div class="lstep-icon lstep-run"></div><span>Reading image data...</span></div>
+    <div class="lstep"><div class="lstep-icon lstep-wait"></div><span>Groq LLaMA 3.3 Vision — analyzing pixels, lighting, artifacts...</span></div>
+    <div class="lstep"><div class="lstep-icon lstep-wait"></div><span>Building verdict...</span></div>
+  </div></div>`;
+
+  try {
+    const b64 = await new Promise((ok,no)=>{
+      const r=new FileReader(); r.onload=e=>ok(e.target.result.split(',')[1]); r.onerror=no; r.readAsDataURL(f);
+    });
+    const resp = await fetch('/analyze-image',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({image: b64, mime_type: f.type||'image/jpeg', context: ctx})
+    });
+    const d = await resp.json();
+    if(d.error){ res.innerHTML=`<div class="panel" style="color:#f85149">${d.error}</div>`; btn.disabled=false; return; }
+    const v=d.verdict||'UNCERTAIN';
+    const conf=Math.round(d.confidence||50);
+    const banHtml = d.date_info ? `<div style="background:#0d1f3d;border:1px solid #1f6feb;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#58a6ff">📅 Date detected in context: <strong>${d.date_info.date}</strong> — ${d.date_info.type} event</div>` : '';
+    const srcHtml = [
+      {name:'Groq LLaMA 3.3',dc:'dot-g',info:'Groq LLaMA 3.3 image forensics'},
+      {name:'Date context',dc:d.date_info?'dot-g':'dot-x',info:d.date_info?d.date_info.date:'None provided'},
+      {name:'NewsAPI',dc:'dot-x',info:'Not used for images'},
+      {name:'Google Search',dc:'dot-x',info:'Not used for images'}
+    ].map(s=>`<div class="src-chip"><div class="src-dot ${s.dc}"></div><span><strong style="color:#e6edf3">${s.name}</strong><br>${s.info}</span></div>`).join('');
+    const sigHtml = (d.signals||[]).map(s=>`<span class="sig sig-${s.type||'yellow'}">${s.text}</span>`).join('');
+    res.innerHTML = `<div class="panel">${banHtml}
+      <div class="verdict-header">
+        <span class="verdict-badge v-${v}">${v}</span>
+        <div class="conf-wrap">
+          <div class="conf-label">Confidence: ${conf}%</div>
+          <div class="conf-track"><div class="conf-fill fill-${v}" style="width:${conf}%"></div></div>
+        </div>
+      </div>
+      <div class="sources-grid">${srcHtml}</div>
+      <div class="rbox"><div class="rl">Assessment</div><p>${d.reason||''}</p></div>
+      <div class="rbox"><div class="rl">Detailed visual analysis</div><p>${d.explanation||''}</p></div>
+      ${sigHtml?`<div class="sigs">${sigHtml}</div>`:''}
+    </div>`;
+    const s=JSON.parse(localStorage.getItem('vAI_stats')||'{"total":0,"real":0,"fake":0,"unc":0}');
+    s.total++; if(v==='REAL')s.real++; else if(v==='FAKE')s.fake++; else s.unc++;
+    localStorage.setItem('vAI_stats',JSON.stringify(s));
+    const h=JSON.parse(localStorage.getItem('vAI_history')||'[]');
+    h.unshift({type:'image',text:ctx||'[Image upload]',verdict:v,time:Date.now()});
+    localStorage.setItem('vAI_history',JSON.stringify(h.slice(0,50)));
+  } catch(e){
+    res.innerHTML=`<div class="panel" style="color:#f85149">Error: ${e.message}</div>`;
+  }
+  btn.disabled=false;
+}
+</script>
+</body>
+</html>
