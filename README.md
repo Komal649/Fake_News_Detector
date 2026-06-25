@@ -98,10 +98,20 @@ http://127.0.0.1:5000/
 Add screenshots of:
 
 - Dashboard
+- <img width="880" height="679" alt="image" src="https://github.com/user-attachments/assets/d795798e-5de7-40fb-a40d-4999b834cc17" />
+
 - Text Analysis
+- <img width="828" height="619" alt="image" src="https://github.com/user-attachments/assets/fe0de86b-939e-466d-9685-d3e26422fef1" />
+
 - URL Analysis
+- <img width="751" height="406" alt="image" src="https://github.com/user-attachments/assets/b6fe85b2-c73c-4e32-8de3-8a2bf1e897e7" />
+
 - Image Analysis
+- <img width="906" height="558" alt="image" src="https://github.com/user-attachments/assets/2f9c94c1-0dac-4734-8e37-3c0114d46e98" />
+
 - Analytics Dashboard
+- <img width="860" height="713" alt="image" src="https://github.com/user-attachments/assets/94fe07bb-ad05-4697-93fb-dabe198bc4bb" />
+
 
 ## Environment Variables
 
